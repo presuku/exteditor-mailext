@@ -1,6 +1,6 @@
 /* vim: set et ts=4 tw=92:
  * Copyright (C) 2017-2018  Jonathan Lebon <jonathan@jlebon.com>
- * This file is part of Textern.
+ * This file is part of Textern for thunderbird.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -21,7 +21,7 @@ function assertNoResponse(response) {
 function notifyError(error) {
     browser.notifications.create({
         type: "basic",
-        title: "Textern",
+        title: "Textern.tb",
         message: "Error: " + error + "."
     });
 }
@@ -75,7 +75,7 @@ function registerDoc(tid, eid, text, caret, url) {
 
     activeDocs.push(id);
     if (port == undefined) {
-        port = browser.runtime.connectNative("textern");
+        port = browser.runtime.connectNative("textern.tb");
         port.onMessage.addListener((response) => {
             handleNativeMessage(response);
         });
@@ -114,7 +114,7 @@ function handleRegisterText(tabId, message) {
 }
 
 function onMessage(message, sender, respond) {
-    if (sender.id != "textern@jlebon.com")
+    if (sender.id != "textern.tb@example.com")
         return;
     var tabId = sender.tab.id;
     if (message.type == "register_text")
