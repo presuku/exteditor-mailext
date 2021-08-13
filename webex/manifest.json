@@ -3,8 +3,8 @@
   "description": "Edit text in your favourite external editor!",
   "homepage_url": "https://github.com/presuku/textern",
   "manifest_version": 2,
-  "version": "0.7",
-
+  "version": "0.1",
+  "author": "presuku",
   "applications": {
     "gecko": {
       "id": "textern.tb@example.com",
@@ -15,17 +15,33 @@
   "background": {
     "scripts": ["background.js"]
   },
-
-  "content_scripts": [
+  "compose_action": {
+    "default_title": "textern.tb",
+    "theme_icons": [
       {
-          "matches": ["<all_urls>"],
-          "js": ["shortcut.js", "content.js"]
+        "light": "images/pen.svg",
+        "dark": "images/pen_dark.svg",
+        "size": 16
+      },
+      {
+        "light": "images/pen.svg",
+        "dark": "images/pen_dark.svg",
+        "size": 32
       }
-  ],
-
+    ]
+  },
+  "commands": {
+    "textern.tb-trigger-feature": {
+      "suggested_key": { "default": "Ctrl+E" }
+    }
+  },
   "options_ui": {
       "page": "options.html"
   },
-
-  "permissions": ["notifications", "nativeMessaging", "storage"]
+  "permissions": ["notifications", "nativeMessaging", "storage", "compose"],
+  "icons": {
+    "64": "images/pen.svg",
+    "32": "images/pen.svg",
+    "16": "images/pen.svg"
+  }
 }
