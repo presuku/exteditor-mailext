@@ -32,11 +32,11 @@ function restoreOptions() {
     }, onError);
 
     browser.storage.local.get("shortcut").then(result => {
-        document.querySelector("#shortcut").value = result.shortcut || "Ctrl+Shift+D";
+        document.querySelector("#shortcut").value = result.shortcut || "Ctrl+E";
     }, onError);
 
     browser.storage.local.get("extension").then(result => {
-        document.querySelector("#extension").value = result.extension || "txt";
+        document.querySelector("#extension").value = result.extension || "eml";
     }, onError);
 }
 
