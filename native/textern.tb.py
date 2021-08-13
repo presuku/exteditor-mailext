@@ -32,7 +32,7 @@ class TmpManager():
             pass
         except (KeyError, OSError):
             tmpdir_parent = None
-        self.tmpdir = tempfile.mkdtemp(prefix="textern-", dir=tmpdir_parent)
+        self.tmpdir = tempfile.mkdtemp(prefix="textern.tb-", dir=tmpdir_parent)
         self._tmpfiles = {}  # relfn --> opaque
 
     def __enter__(self):
@@ -44,10 +44,10 @@ class TmpManager():
     def __contains__(self, relfn):
         return relfn in self._tmpfiles
 
-    def new(self, text, url, extension, opaque):
-        sanitized_url = urllib.parse.quote(url, safe='')
+    def new(self, text, subject, extension, opaque):
+        sanitized_subject = "".join(x if x.isalnum() else '_' for x in subject[:32])
         f, absfn = tempfile.mkstemp(dir=self.tmpdir,
-                                    prefix=(sanitized_url + '-'),
+                                    prefix=(sanitized_subject + '-'),
                                     suffix=("." + extension))
         # this itself will cause a harmless inotify event, though as a cool
         # side effect, we get an initial highlighting of the text area which is
@@ -141,7 +141,7 @@ def offset_to_line_and_column(text, offset):
 async def handle_message_new_text(tmp_mgr, msg):
 
     # create a new tempfile for it
-    absfn = tmp_mgr.new(msg["text"], msg["url"],
+    absfn = tmp_mgr.new(msg["text"], msg["subject"],
                         msg["prefs"]["extension"], msg["id"])
 
     editor_args = json.loads(msg["prefs"]["editor"])
@@ -171,14 +171,18 @@ message_handlers = {
 }
 
 
+g_first_edit =  True
 def handle_inotify_event(ino, tmp_mgr):
+    global g_first_edit
     for event in ino.read():
         # this check is relevant in the case where we're handling the inotify
         # event caused by tmp_mgr.new(), but then an exception occurred in
         # handle_message() which caused the tmpfile to already be deleted
-        if event.name in tmp_mgr:
+        if event.name in tmp_mgr and not g_first_edit:
             text, id = tmp_mgr.get(event.name)
             send_text_update(id, text)
+        else:
+            g_first_edit = False
 
 
 def send_text_update(id, text):
