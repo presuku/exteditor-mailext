@@ -65,9 +65,7 @@ async function onCommand(command) {
             active: true
         }).then(tabs => {
            setupRegisterDoc(tabs[0].id);
-        }, error => {
-          console.error(error)
-        })
+        }, logError)
     }
 }
 
@@ -84,23 +82,30 @@ async function onChanged(change) {
 }
 
 async function getSettings(hs) {
-    var editheaders = await browser.storage.local.get("editheaders").then(r => { return r.editheaders;}, logError);
+    var editheaders = await browser.storage.local.get("editheaders"
+                            ).then(r => {return r.editheaders;},logError);
 
     if (editheaders) {
-        hs[0].s = await browser.storage.local.get("editheaders_subject").then(r => {
-            return r.editheaders_subject;}, logError);
-        hs[1].s = await browser.storage.local.get("editheaders_to").then(r => {
-            return r.editheaders_to;}, logError);
-        hs[2].s = await browser.storage.local.get("editheaders_cc").then(r => {
-            return r.editheaders_cc;}, logError);
-        hs[3].s = await browser.storage.local.get("editheaders_bcc").then(r => {
-            return r.editheaders_bcc;}, logError);
-        hs[4].s = await browser.storage.local.get("editheaders_replyto").then(r => {
-            return r.editheaders_replyto;}, logError);
-        hs[5].s = await browser.storage.local.get("editheaders_newsgroups").then(r => {
-            return r.editheaders_newsgroups;}, logError);
-        hs[6].s = await browser.storage.local.get("editheaders_followupto").then(r => {
-            return r.editheaders_followupto;}, logError);
+        await Promise.all([
+            (async ()=>await browser.storage.local.get("editheaders_subject"
+                             ).then(r => {return r.editheaders_subject;},logError))(),
+            (async ()=>await browser.storage.local.get("editheaders_to"
+                             ).then(r => {return r.editheaders_to;},logError))(),
+            (async ()=>await browser.storage.local.get("editheaders_cc"
+                             ).then(r => {return r.editheaders_cc;},logError))(),
+            (async ()=>await browser.storage.local.get("editheaders_bcc"
+                             ).then(r => {return r.editheaders_bcc;},logError))(),
+            (async ()=>await browser.storage.local.get("editheaders_replyto"
+                             ).then(r => {return r.editheaders_replyto;},logError))(),
+            (async ()=>await browser.storage.local.get("editheaders_newsgroups"
+                             ).then(r => {return r.editheaders_newsgroups;},logError))(),
+            (async ()=>await browser.storage.local.get("editheaders_followupto"
+                             ).then(r => {return r.editheaders_followupto;},logError))(),
+        ]).then(r => {
+            for (let i in r) {
+                hs[i].s = r[i]
+            }
+        });
     } else {
         for (let i = 0; i < hs.length; ++i) {
             hs[i].s = false;
