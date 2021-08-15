@@ -14,12 +14,17 @@ form > span {
     padding-left: 10px;
 }
 
-form > input, form > label {
+form > input, form > label{
     display: block;
 }
 
-form > input {
+form > input, form > fieldset {
     width: 80%;
+}
+
+form > fieldset {
+    display: grid;
+    grid-template-columns: auto auto auto;
 }
 
 form > button {

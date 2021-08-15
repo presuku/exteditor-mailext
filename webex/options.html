@@ -17,8 +17,45 @@
       <label for="extension">Document extension</label>
       <input type="text" id="extension" required=true pattern="[.a-zA-Z0-9_-]+"
              title='Must be an alphanumerical string (excluding leading dot)'>
+      <fieldset id="editheaders-fieldset">
+        <legend>
+          <input type="checkbox" id="editheaders" name="editheaders">
+          <label for="editheaders">Edit headers</label>
+        </legend>
+
+        <div>
+            <input type="checkbox" id="subject" name="editheader">
+            <label for="subject">Subject</label>
+        </div>
+        <div>
+            <input type="checkbox" id="to" name="editheader">
+            <label for="to">To</label>
+        </div>
+        <div>
+            <input type="checkbox" id="cc" name="editheader">
+            <label for="cc">CC</label>
+        </div>
+        <div>
+            <input type="checkbox" id="bcc" name="editheader">
+            <label for="bcc">BCC</label>
+        </div>
+        <div>
+            <input type="checkbox" id="replyto" name="editheader">
+            <label for="replyto">Reply-To</label>
+        </div>
+        <div>
+            <input type="checkbox" id="newsgroups" name="editheader">
+            <label for="newsgroups">NewsGroup</label>
+        </div>
+        <div>
+            <input type="checkbox" id="followupto" name="editheader">
+            <label for="followupto">Followup-To</label>
+        </div>
+
+      </fieldset>
+
       <button type="submit">Save</button><span id="saved"></span>
     </form>
-    <script src="options.js" charset="utf-8"></script>
+    <script src="options.js" charset="utf-8" type="application/javascript"></script>
   </body>
 </html>
