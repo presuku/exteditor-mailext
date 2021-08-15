@@ -18,7 +18,8 @@ var headers = [
     {k:"cc",         v:"Cc"},
     {k:"bcc",        v:"Bcc"},
     {k:"replyTo",    v:"Reply-To"},
-    {k:"newsgroups", v:"Newsgroup"}
+    {k:"newsgroups", v:"Newsgroup"},
+    {k:"followupTo", v:"Followup-To"}
 ];
 
 function logError(error) {
@@ -91,7 +92,7 @@ async function setupRegisterDoc(tid) {
     for (let i = 0; i < headers.length; ++i) {
         if (details[headers[i].k].length > 0) {
             content += headers[i].v + ":"
-                + " ".repeat(10 - headers[i].v.length)
+                + " ".repeat(11 - headers[i].v.length)
                 + details[headers[i].k] + newLine;
         }
     }
