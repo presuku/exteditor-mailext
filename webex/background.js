@@ -203,23 +203,21 @@ async function contentSetActiveText(tid, isPlain, text) {
         }
     }
     var payload = {
-        subject    : headers[0].s ? hTable[headers[0].k] : undefined,
-        to         : headers[1].s ? hTable[headers[1].k] : undefined,
-        cc         : headers[2].s ? hTable[headers[2].k] : undefined,
-        bcc        : headers[3].s ? hTable[headers[3].k] : undefined,
-        replyTo    : headers[4].s ? hTable[headers[4].k] : undefined,
-        newsgroups : headers[5].s ? hTable[headers[5].k] : undefined,
-        followupTo : headers[6].s ? hTable[headers[6].k] : undefined,
+        subject       : headers[0].s ? hTable[headers[0].k] : undefined,
+        to            : headers[1].s ? hTable[headers[1].k] : undefined,
+        cc            : headers[2].s ? hTable[headers[2].k] : undefined,
+        bcc           : headers[3].s ? hTable[headers[3].k] : undefined,
+        replyTo       : headers[4].s ? hTable[headers[4].k] : undefined,
+        newsgroups    : headers[5].s ? hTable[headers[5].k] : undefined,
+        followupTo    : headers[6].s ? hTable[headers[6].k] : undefined,
+        plainTextBody : undefined,
+        body          : undefined,
     };
-    if (isPlain == 1) {
-        payload.plainTextBody = body;
-    } else {
-        payload.body = body;
-    }
 
     browser.compose.setComposeDetails(tid, payload);
     await browser.tabs.sendMessage(tid, {
         type: "set_text",
+        plain: isPlain,
         text: body
     }).then(assertNoResponse, logError);
 }

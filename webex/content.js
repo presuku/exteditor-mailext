@@ -48,8 +48,14 @@ function fadeBackground(e) {
     }, ANIMATION_DURATION_S / ANIMATION_N_STEPS);
 }
 
-function setText(id, text) {
+function setText(message) {
     var e = document.body;
+
+    if (message.plain) {
+        e.textContent = message.text;
+    } else {
+        e.innerHTML = message.text;
+    }
     fadeBackground(e);
 }
 
@@ -57,7 +63,7 @@ function onMessage(message, sender, respond) {
     if (sender.id != "textern.tb@example.com")
         return;
     if (message.type == "set_text") {
-        setText(message.id, message.text);
+        setText(message);
         console.log(`set_text message type: ${message.type}`);
     } else {
         console.log(`Unknown message type: ${message.type}`);
