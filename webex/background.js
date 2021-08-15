@@ -13,13 +13,13 @@ var currentWinId = undefined;
 var newLine = "\n"
 var splitLine = "-=-=-=-=-=-=-=-=-=# DontRemoveThisLine #=-=-=-=-=-=-=-=-=-" + newLine;
 var headers = [
-    {k:"subject",    v:"Subject"},
-    {k:"to",         v:"To"},
-    {k:"cc",         v:"Cc"},
-    {k:"bcc",        v:"Bcc"},
-    {k:"replyTo",    v:"Reply-To"},
-    {k:"newsgroups", v:"Newsgroup"},
-    {k:"followupTo", v:"Followup-To"}
+    {k:"subject",    v:"Subject",     s:false},
+    {k:"to",         v:"To",          s:false},
+    {k:"cc",         v:"Cc",          s:false},
+    {k:"bcc",        v:"Bcc",         s:false},
+    {k:"replyTo",    v:"Reply-To",    s:false},
+    {k:"newsgroups", v:"Newsgroup",   s:false},
+    {k:"followupTo", v:"Followup-To", s:false}
 ];
 
 function logError(error) {
@@ -83,20 +83,49 @@ async function onChanged(change) {
   });
 }
 
+async function getSettings(hs) {
+    var editheaders = await browser.storage.local.get("editheaders").then(r => { return r.editheaders;}, logError);
+
+    if (editheaders) {
+        hs[0].s = await browser.storage.local.get("editheaders_subject").then(r => {
+            return r.editheaders_subject;}, logError);
+        hs[1].s = await browser.storage.local.get("editheaders_to").then(r => {
+            return r.editheaders_to;}, logError);
+        hs[2].s = await browser.storage.local.get("editheaders_cc").then(r => {
+            return r.editheaders_cc;}, logError);
+        hs[3].s = await browser.storage.local.get("editheaders_bcc").then(r => {
+            return r.editheaders_bcc;}, logError);
+        hs[4].s = await browser.storage.local.get("editheaders_replyto").then(r => {
+            return r.editheaders_replyto;}, logError);
+        hs[5].s = await browser.storage.local.get("editheaders_newsgroups").then(r => {
+            return r.editheaders_newsgroups;}, logError);
+        hs[6].s = await browser.storage.local.get("editheaders_followupto").then(r => {
+            return r.editheaders_followupto;}, logError);
+    } else {
+        for (let i = 0; i < hs.length; ++i) {
+            hs[i].s = false;
+        }
+    }
+    return editheaders;
+}
 
 async function setupRegisterDoc(tid) {
     // Get the existing message.
     let details = await browser.compose.getComposeDetails(tid);
-
     var content = "";
-    for (let i = 0; i < headers.length; ++i) {
-        if (details[headers[i].k].length > 0) {
-            content += headers[i].v + ":"
-                + " ".repeat(11 - headers[i].v.length)
-                + details[headers[i].k] + newLine;
+    var editHeaders;
+
+    editHeaders = await getSettings(headers);
+    if (editHeaders) {
+        for (let i = 0; i < headers.length; ++i) {
+            if (headers[i].s) {
+                content += headers[i].v + ":"
+                    + " ".repeat(11 - headers[i].v.length)
+                    + details[headers[i].k] + newLine;
+            }
         }
+        content += splitLine
     }
-    content += splitLine
 
     var subject;
     if (details.subject == "") {
@@ -115,65 +144,70 @@ async function setupRegisterDoc(tid) {
     }
 }
 
-function contentSetActiveText(tid, isPlain, text) {
+async function contentSetActiveText(tid, isPlain, text) {
     var contentList = text.split(splitLine);
     var body;
+    var editHeaders;
 
-    if (contentList.length== 1) {
+    editHeaders = await getSettings(headers);
+    if (editHeaders && contentList.length == 1) {
         notifyError("malformed error");
+        return;
+    } else if (!editHeaders && contentList.length == 1) {
+        body = contentList[0];
     } else {
         body = contentList[1];
-        var headerList = contentList[0].split(newLine)
-        var hTable = new Array;
-        var headerType = "unknown"; // should never be used
+    }
+    var headerList = contentList[0].split(newLine)
+    var hTable = new Array;
+    var headerType = "unknown"; // should never be used
 
-        for (var i = 0; i < headerList.length; ++i) {
-            var whichHeader = headerList[i].split(":");
-            if (whichHeader.length >= 2) {
-                let search = (h, s) => {
-                    for (let i = 0; i < h.length; ++i) {
-                        if (h[i].v.toLowerCase() == s) {
-                            return h[i].k;
-                        }
+    for (var i = 0; i < headerList.length; ++i) {
+        var whichHeader = headerList[i].split(":");
+        if (whichHeader.length >= 2) {
+            let search = (h, s) => {
+                for (let i = 0; i < h.length; ++i) {
+                    if (h[i].v.toLowerCase() == s) {
+                        return h[i].k;
                     }
                 }
-                headerType = search(headers, whichHeader.shift().replace(/\s+/g, "").toLowerCase());
+            }
+            headerType = search(headers, whichHeader.shift().replace(/\s+/g, "").toLowerCase());
 
-                // if the subject contains ":", the array has more than 2 members...
-                var headerContent = whichHeader.join(":").replace(/^\s+/, "");
-                if (hTable[headerType] === undefined) {
-                    hTable[headerType] = headerContent;
-                } else {
-                    hTable[headerType] += "," + headerContent;
-                }
+            // if the subject contains ":", the array has more than 2 members...
+            var headerContent = whichHeader.join(":").replace(/^\s+/, "");
+            if (hTable[headerType] === undefined) {
+                hTable[headerType] = headerContent;
             } else {
-                // if not only spaces or empty line
-                if (/\w/.test(headerList[i])) {
-                    hTable[headerType] += "," + headerList[i];
-                }
+                hTable[headerType] += "," + headerContent;
             }
-        }
-        for (let i = 0; i < headers.length; ++i) {
-            if (hTable[headers[i].k] === undefined) {
-                hTable[headers[i].k] = ""
-            }
-        }
-        var payload = {
-            subject    : hTable[headers[0].k],
-            to         : hTable[headers[1].k],
-            cc         : hTable[headers[2].k],
-            bcc        : hTable[headers[3].k],
-            replyTo    : hTable[headers[4].k],
-            newsgroups : hTable[headers[5].k],
-            followupTo : hTable[headers[6].k],
-        };
-        if (isPlain == 1) {
-            payload.plainTextBody = body;
         } else {
-            payload.body = body;
+            // if not only spaces or empty line
+            if (/\w/.test(headerList[i])) {
+                hTable[headerType] += "," + headerList[i];
+            }
         }
-        browser.compose.setComposeDetails(tid, payload);
     }
+    for (let i = 0; i < headers.length; ++i) {
+        if (hTable[headers[i].k] === undefined) {
+            hTable[headers[i].k] = ""
+        }
+    }
+    var payload = {
+        subject    : headers[0].s ? hTable[headers[0].k] : undefined,
+        to         : headers[1].s ? hTable[headers[1].k] : undefined,
+        cc         : headers[2].s ? hTable[headers[2].k] : undefined,
+        bcc        : headers[3].s ? hTable[headers[3].k] : undefined,
+        replyTo    : headers[4].s ? hTable[headers[4].k] : undefined,
+        newsgroups : headers[5].s ? hTable[headers[5].k] : undefined,
+        followupTo : headers[6].s ? hTable[headers[6].k] : undefined,
+    };
+    if (isPlain == 1) {
+        payload.plainTextBody = body;
+    } else {
+        payload.body = body;
+    }
+    browser.compose.setComposeDetails(tid, payload);
 }
 
 
