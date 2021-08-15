@@ -1,4 +1,4 @@
-/* vim: set et ts=4 tw=92:
+/* vim: set et ts=4 sts=4 sw=4 tw=92:
  * Copyright (C) 2017-2018  Jonathan Lebon <jonathan@jlebon.com>
  * This file is part of Textern.
  * SPDX-License-Identifier: GPL-3.0-or-later
