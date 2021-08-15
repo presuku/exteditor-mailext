@@ -44,6 +44,10 @@ function notifyError(error) {
     browser.commands.onCommand.addListener(onCommand);
     browser.composeAction.onClicked.addListener(onClicked);
     browser.storage.onChanged.addListener(onChanged);
+    browser.composeScripts.register({
+      js: [ {file: "content.js"}, ]
+    });
+
     window.addEventListener('unload', () => {
         browser.commands.onCommand.removeListener(onCommand);
         browser.windows.onFocusChanged.removeListener(onFocusChanged);
@@ -212,7 +216,12 @@ async function contentSetActiveText(tid, isPlain, text) {
     } else {
         payload.body = body;
     }
+
     browser.compose.setComposeDetails(tid, payload);
+    await browser.tabs.sendMessage(tid, {
+        type: "set_text",
+        text: body
+    }).then(assertNoResponse, logError);
 }
 
 
