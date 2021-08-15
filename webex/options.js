@@ -51,51 +51,42 @@ function clearCheckmark(e) {
 
 async function restoreOptions() {
 
-    await browser.storage.local.get("editor").then(result => {
-        document.querySelector("#editor").value =
-            result.editor || "[\"gedit\", \"+%l:%c\"]";
-    }, onError);
-
-    await browser.storage.local.get("shortcut").then(result => {
-        document.querySelector("#shortcut").value = result.shortcut || "Ctrl+E";
-    }, onError);
-
-    await browser.storage.local.get("extension").then(result => {
-        document.querySelector("#extension").value = result.extension || "eml";
-    }, onError);
-
-    await browser.storage.local.get("editheaders").then(result => {
-        document.querySelector("#editheaders-fieldset").disabled = !result.editheaders;
-        document.querySelector("#editheaders").checked = result.editheaders;
-    }, onError);
-
-    await browser.storage.local.get("editheaders_subject").then(result => {
-        document.querySelector("#subject").checked = result.editheaders_subject;
-    }, onError);
-
-    await browser.storage.local.get("editheaders_to").then(result => {
-        document.querySelector("#to").checked = result.editheaders_to;
-    }, onError);
-
-    await browser.storage.local.get("editheaders_cc").then(result => {
-        document.querySelector("#cc").checked = result.editheaders_cc;
-    }, onError);
-
-    await browser.storage.local.get("editheaders_bcc").then(result => {
-        document.querySelector("#bcc").checked = result.editheaders_bcc;
-    }, onError);
-
-    await browser.storage.local.get("editheaders_replyto").then(result => {
-        document.querySelector("#replyto").checked = result.editheaders_replyto;
-    }, onError);
-
-    await browser.storage.local.get("editheaders_newsgroups").then(result => {
-        document.querySelector("#newsgroups").checked = result.editheaders_newsgroups;
-    }, onError);
-
-    await browser.storage.local.get("editheaders_followupto").then(result => {
-        document.querySelector("#followupto").checked = result.editheaders_followupto;
-    }, onError);
+    await Promise.all([
+        (async ()=>await  browser.storage.local.get("editor").then(r => {
+            document.querySelector("#editor").value = r.editor || "[\"gedit\", \"+%l:%c\"]";
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("shortcut").then(r => {
+            document.querySelector("#shortcut").value = r.shortcut || "Ctrl+E";
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("extension").then(r => {
+            document.querySelector("#extension").value = r.extension || "eml";
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders").then(r => {
+            document.querySelector("#editheaders-fieldset").disabled = !r.editheaders;
+            document.querySelector("#editheaders").checked = r.editheaders;
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders_subject").then(r => {
+            document.querySelector("#subject").checked = r.editheaders_subject;
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders_to").then(r => {
+            document.querySelector("#to").checked = r.editheaders_to;
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders_cc").then(r => {
+            document.querySelector("#cc").checked = r.editheaders_cc;
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders_bcc").then(r => {
+            document.querySelector("#bcc").checked = r.editheaders_bcc;
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders_replyto").then(r => {
+            document.querySelector("#replyto").checked = r.editheaders_replyto;
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders_newsgroups").then(r => {
+            document.querySelector("#newsgroups").checked = r.editheaders_newsgroups;
+        }, onError))(),
+        (async ()=>await  browser.storage.local.get("editheaders_followupto").then(r => {
+            document.querySelector("#followupto").checked = r.editheaders_followupto;
+        }, onError))(),
+    ]);
 }
 
 function editheadersFieldsetToggle(e) {
