@@ -12,15 +12,15 @@ var activeDocs = [];
 var currentWinId = undefined;
 var newLine = "\n"
 var splitLine = "-=-=-=-=-=-=-=-=-=# DontRemoveThisLine #=-=-=-=-=-=-=-=-=-" + newLine;
-var headers = [
-    {k:"subject",    v:"Subject",     s:false},
-    {k:"to",         v:"To",          s:false},
-    {k:"cc",         v:"Cc",          s:false},
-    {k:"bcc",        v:"Bcc",         s:false},
-    {k:"replyTo",    v:"Reply-To",    s:false},
-    {k:"newsgroups", v:"Newsgroup",   s:false},
-    {k:"followupTo", v:"Followup-To", s:false}
-];
+var headers = {
+    editheaders_subject    : {k:"subject",    v:"Subject",     s:false},
+    editheaders_to         : {k:"to",         v:"To",          s:false},
+    editheaders_cc         : {k:"cc",         v:"Cc",          s:false},
+    editheaders_bcc        : {k:"bcc",        v:"Bcc",         s:false},
+    editheaders_replyto    : {k:"replyTo",    v:"Reply-To",    s:false},
+    editheaders_newsgroups : {k:"newsgroups", v:"Newsgroup",   s:false},
+    editheaders_followupto : {k:"followupTo", v:"Followup-To", s:false},
+};
 
 function logError(error) {
     console.log(`Error: ${error}`);
@@ -85,52 +85,50 @@ async function onChanged(change) {
   });
 }
 
-async function getSettings(hs) {
-    var editheaders = await browser.storage.local.get("editheaders"
-                            ).then(r => {return r.editheaders;},logError);
+async function getSettings() {
+
+    var rs;
+    var hs = headers;
+
+    await browser.storage.local.get([
+            "editheaders",
+            "editheaders_subject",
+            "editheaders_to",
+            "editheaders_cc",
+            "editheaders_bcc",
+            "editheaders_replyto",
+            "editheaders_newsgroups",
+            "editheaders_followupto",
+            ]).then(r => {rs = r}, logError);
+
+    var editheaders = rs.editheaders;
+    delete rs.editheaders
 
     if (editheaders) {
-        await Promise.all([
-            (async ()=>await browser.storage.local.get("editheaders_subject"
-                             ).then(r => {return r.editheaders_subject;},logError))(),
-            (async ()=>await browser.storage.local.get("editheaders_to"
-                             ).then(r => {return r.editheaders_to;},logError))(),
-            (async ()=>await browser.storage.local.get("editheaders_cc"
-                             ).then(r => {return r.editheaders_cc;},logError))(),
-            (async ()=>await browser.storage.local.get("editheaders_bcc"
-                             ).then(r => {return r.editheaders_bcc;},logError))(),
-            (async ()=>await browser.storage.local.get("editheaders_replyto"
-                             ).then(r => {return r.editheaders_replyto;},logError))(),
-            (async ()=>await browser.storage.local.get("editheaders_newsgroups"
-                             ).then(r => {return r.editheaders_newsgroups;},logError))(),
-            (async ()=>await browser.storage.local.get("editheaders_followupto"
-                             ).then(r => {return r.editheaders_followupto;},logError))(),
-        ]).then(r => {
-            for (let i in r) {
-                hs[i].s = r[i]
-            }
-        });
+        for (let i in rs) {
+            hs[i].s = rs[i];
+        }
     } else {
-        for (let i = 0; i < hs.length; ++i) {
+        for (let i in rs) {
             hs[i].s = false;
         }
     }
-    return editheaders;
+
+    return [editheaders, hs];
 }
 
 async function setupRegisterDoc(tid) {
     // Get the existing message.
     let details = await browser.compose.getComposeDetails(tid);
     var content = "";
-    var editHeaders;
+    var [editHeaders, hs] = await getSettings();
 
-    editHeaders = await getSettings(headers);
     if (editHeaders) {
-        for (let i = 0; i < headers.length; ++i) {
-            if (headers[i].s) {
-                content += headers[i].v + ":"
-                    + " ".repeat(11 - headers[i].v.length)
-                    + details[headers[i].k] + newLine;
+        for (let i in hs) {
+            if (hs[i].s) {
+                content += hs[i].v + ":"
+                    + " ".repeat(11 - hs[i].v.length)
+                    + details[hs[i].k] + newLine;
             }
         }
         content += splitLine
@@ -156,9 +154,8 @@ async function setupRegisterDoc(tid) {
 async function contentSetActiveText(tid, isPlain, text) {
     var contentList = text.split(splitLine);
     var body;
-    var editHeaders;
+    var [editHeaders, hs] = await getSettings();
 
-    editHeaders = await getSettings(headers);
     if (editHeaders && contentList.length == 1) {
         notifyError("malformed error");
         return;
@@ -174,15 +171,11 @@ async function contentSetActiveText(tid, isPlain, text) {
     for (var i = 0; i < headerList.length; ++i) {
         var whichHeader = headerList[i].split(":");
         if (whichHeader.length >= 2) {
-            let search = (h, s) => {
-                for (let i = 0; i < h.length; ++i) {
-                    if (h[i].v.toLowerCase() == s) {
-                        return h[i].k;
-                    }
-                }
-            }
-            headerType = search(headers, whichHeader.shift().replace(/\s+/g, "").toLowerCase());
-
+            headerType = ((h, s) => {
+                            for (let i in h) {
+                                if (h[i].v.toLowerCase() == s) { return h[i].k; }
+                            }
+                         })(hs, whichHeader.shift().replace(/\s+/g, "").toLowerCase());
             // if the subject contains ":", the array has more than 2 members...
             var headerContent = whichHeader.join(":").replace(/^\s+/, "");
             if (hTable[headerType] === undefined) {
@@ -197,22 +190,23 @@ async function contentSetActiveText(tid, isPlain, text) {
             }
         }
     }
-    for (let i = 0; i < headers.length; ++i) {
-        if (hTable[headers[i].k] === undefined) {
-            hTable[headers[i].k] = ""
+
+    for (let i in hs) {
+        if (hTable[hs[i].k] === undefined) {
+            hTable[hs[i].k] = ""
         }
     }
-    var payload = {
-        subject       : headers[0].s ? hTable[headers[0].k] : undefined,
-        to            : headers[1].s ? hTable[headers[1].k] : undefined,
-        cc            : headers[2].s ? hTable[headers[2].k] : undefined,
-        bcc           : headers[3].s ? hTable[headers[3].k] : undefined,
-        replyTo       : headers[4].s ? hTable[headers[4].k] : undefined,
-        newsgroups    : headers[5].s ? hTable[headers[5].k] : undefined,
-        followupTo    : headers[6].s ? hTable[headers[6].k] : undefined,
-        plainTextBody : undefined,
-        body          : undefined,
-    };
+
+
+    var payload = (() => {
+        var p = {};
+        for (let i in hs) {
+            p[hs[i].k] = hs[i].s ? hTable[hs[i].k] : undefined;
+        }
+        p.plainTextBody = undefined;
+        p.body          = undefined;
+        return p;
+    })();
 
     browser.compose.setComposeDetails(tid, payload);
     await browser.tabs.sendMessage(tid, {

@@ -6,7 +6,7 @@
 
 "use strict";
 
-function onError(error) {
+function logError(error) {
     console.log(`Error: ${error}`);
 }
 
@@ -52,40 +52,40 @@ function clearCheckmark(e) {
 async function restoreOptions() {
 
     await Promise.all([
-        (async ()=>await  browser.storage.local.get("editor").then(r => {
+        (async () => await browser.storage.local.get("editor").then(r => {
             document.querySelector("#editor").value = r.editor || "[\"gedit\", \"+%l:%c\"]";
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("shortcut").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("shortcut").then(r => {
             document.querySelector("#shortcut").value = r.shortcut || "Ctrl+E";
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("extension").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("extension").then(r => {
             document.querySelector("#extension").value = r.extension || "eml";
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders").then(r => {
             document.querySelector("#editheaders-fieldset").disabled = !r.editheaders;
             document.querySelector("#editheaders").checked = r.editheaders;
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders_subject").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders_subject").then(r => {
             document.querySelector("#subject").checked = r.editheaders_subject;
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders_to").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders_to").then(r => {
             document.querySelector("#to").checked = r.editheaders_to;
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders_cc").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders_cc").then(r => {
             document.querySelector("#cc").checked = r.editheaders_cc;
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders_bcc").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders_bcc").then(r => {
             document.querySelector("#bcc").checked = r.editheaders_bcc;
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders_replyto").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders_replyto").then(r => {
             document.querySelector("#replyto").checked = r.editheaders_replyto;
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders_newsgroups").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders_newsgroups").then(r => {
             document.querySelector("#newsgroups").checked = r.editheaders_newsgroups;
-        }, onError))(),
-        (async ()=>await  browser.storage.local.get("editheaders_followupto").then(r => {
+        }, logError))(),
+        (async () => await browser.storage.local.get("editheaders_followupto").then(r => {
             document.querySelector("#followupto").checked = r.editheaders_followupto;
-        }, onError))(),
+        }, logError))(),
     ]);
 }
 
