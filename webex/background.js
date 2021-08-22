@@ -146,7 +146,10 @@ async function setupRegisterDoc(tid) {
         content += details.plainTextBody;
         registerDoc(tid, 1, content, 0, subject);
     } else {
-        content += details.body;
+        let parser = new DOMParser()
+        let html = parser.parseFromString(details.body, "text/html")
+        let body = html.querySelector("body").innerHTML;
+        content += body;
         registerDoc(tid, 0, content, 0, subject);
     }
 }
