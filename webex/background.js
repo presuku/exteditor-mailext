@@ -70,11 +70,17 @@ async function getSettings() {
     return [editheaders, hs];
 }
 
-async function setupRegisterDoc(tid) {
+async function setupRegisterDoc(msg) {
+    const tid = msg.tid;
+    const markHTML = msg.mark_html;
+    const markText = msg.mark_text;
+    let caret = msg.caret_offset;
+    console.log(`caret offset ${caret}`)
+
     // Get the existing message.
-    let details = await browser.compose.getComposeDetails(tid);
-    var content = "";
-    var [editHeaders, hs] = await getSettings();
+    const details = await browser.compose.getComposeDetails(tid);
+    const [editHeaders, hs] = await getSettings();
+    let content = "";
 
     if (editHeaders) {
         for (let i in hs) {
@@ -85,26 +91,48 @@ async function setupRegisterDoc(tid) {
             }
         }
         content += splitLine
+        caret += content.length;
     }
 
-    var subject;
+    let subject;
     if (details.subject == "") {
         subject = "untitled";
     } else {
         subject = details.subject;
     }
 
+    const parser = new DOMParser()
+    const html = parser.parseFromString(details.body, "text/html")
+    let body;
+    let p;
     if (details.isPlainText) {
-        // The message is being composed in plain text mode.
-        content += details.plainTextBody;
-        registerDoc(tid, 1, content, 0, subject);
+        html.body.innerHTML = html.body.innerHTML
+                                       .replace(markHTML, markText)
+                                       .replace(/<br>/g, "<br>\n");
+        body = html.body.innerText.split(markText)
+        p = 1;
     } else {
-        let parser = new DOMParser()
-        let html = parser.parseFromString(details.body, "text/html")
-        let body = html.querySelector("body").innerHTML;
-        content += body;
-        registerDoc(tid, 0, content, 0, subject);
+        // remove first line feed after body tag.
+        const innerHTML = ((s) => {
+            if (s[0] == "\n") {
+                return s.substring(1);
+            } else {
+                return s;
+            }
+        })(html.body.innerHTML);
+        body = innerHTML.split(markHTML);
+        p = 0;
     }
+
+    caret += body[0].length;
+    content += body[0] + body[1];
+
+    await browser.tabs.sendMessage(tid, {
+        type: "restore_html",
+        tid: tid,
+    }).then(assertNoResponse, logError);
+
+    registerDoc(tid, p, content, caret, subject);
 }
 
 async function contentSetActiveText(tid, isPlain, text) {
@@ -260,20 +288,26 @@ function onFocusChanged(windowId) {
 
 async function onCommand(command) {
     if (command === "textern.tb-trigger-feature") {
-        browser.tabs.query({
+        let tid;
+        await browser.tabs.query({
             windowId: currentWinId,
             lastFocusedWindow: false,
             windowType: "messageCompose",
             active: true
-        }).then(tabs => {
-           setupRegisterDoc(tabs[0].id);
-        }, logError)
+        }).then(tabs => { tid = tabs[0].id; }, logError);
+
+        await browser.tabs.sendMessage(tid, {
+            type: "set_mark",
+            tid: tid,
+        }).then(assertNoResponse, logError);
     }
 }
 
 async function onClicked(tab) {
-    // console.log("clicked:" + tab.id);
-    setupRegisterDoc(tab.id);
+    await browser.tabs.sendMessage(tab.id, {
+        type: "set_mark",
+        tid: tab.id,
+    }).then(assertNoResponse, logError);
 }
 
 async function onChanged(change) {
@@ -283,17 +317,29 @@ async function onChanged(change) {
   });
 }
 
+function onMessage(message, sender, respond) {
+    if (sender.id != "textern.tb@example.com")
+        return;
+    if (message.type == "do_setup") {
+        setupRegisterDoc(message);
+    } else {
+        console.log(`Unknown message type: ${message.type}`);
+    }
+}
+
 (async () => {
     browser.windows.onFocusChanged.addListener(onFocusChanged);
     browser.commands.onCommand.addListener(onCommand);
     browser.composeAction.onClicked.addListener(onClicked);
     browser.storage.onChanged.addListener(onChanged);
+    browser.runtime.onMessage.addListener(onMessage);
     browser.composeScripts.register({ js: [ {file: "content.js"}, ] });
     window.addEventListener('unload', () => {
         browser.windows.onFocusChanged.removeListener(onFocusChanged);
         browser.commands.onCommand.removeListener(onCommand);
         browser.composeAction.onClicked.removeListener(onClicked);
         browser.storage.onChanged.removeListener(onChanged);
+        browser.runtime.onMessage.removeListener(onMessage);
     });
 })();
 
