@@ -38,53 +38,6 @@ function notifyError(error) {
     });
 }
 
-// regiser compose script
-(async () => {
-    browser.windows.onFocusChanged.addListener(onFocusChanged);
-    browser.commands.onCommand.addListener(onCommand);
-    browser.composeAction.onClicked.addListener(onClicked);
-    browser.storage.onChanged.addListener(onChanged);
-    browser.composeScripts.register({
-      js: [ {file: "content.js"}, ]
-    });
-
-    window.addEventListener('unload', () => {
-        browser.commands.onCommand.removeListener(onCommand);
-        browser.windows.onFocusChanged.removeListener(onFocusChanged);
-        browser.composeAction.onClicked.removeListener(onClicked);
-        browser.storage.onChanged.removeListener(onChanged);
-    });
-})();
-
-function onFocusChanged(windowId) {
-    currentWinId = windowId;
-}
-
-async function onCommand(command) {
-    if (command === "textern.tb-trigger-feature") {
-        browser.tabs.query({
-            windowId: currentWinId,
-            lastFocusedWindow: false,
-            windowType: "messageCompose",
-            active: true
-        }).then(tabs => {
-           setupRegisterDoc(tabs[0].id);
-        }, logError)
-    }
-}
-
-async function onClicked(tab) {
-    // console.log("clicked:" + tab.id);
-    setupRegisterDoc(tab.id);
-}
-
-async function onChanged(change) {
-  browser.commands.update({
-    name: "textern.tb-trigger-feature",
-    shortcut:change.shortcut.newValue
-  });
-}
-
 async function getSettings() {
 
     var rs;
@@ -300,4 +253,47 @@ function registerDoc(tid, isPlain, text, caret, subject) {
         });
     }, logError);
 }
+
+function onFocusChanged(windowId) {
+    currentWinId = windowId;
+}
+
+async function onCommand(command) {
+    if (command === "textern.tb-trigger-feature") {
+        browser.tabs.query({
+            windowId: currentWinId,
+            lastFocusedWindow: false,
+            windowType: "messageCompose",
+            active: true
+        }).then(tabs => {
+           setupRegisterDoc(tabs[0].id);
+        }, logError)
+    }
+}
+
+async function onClicked(tab) {
+    // console.log("clicked:" + tab.id);
+    setupRegisterDoc(tab.id);
+}
+
+async function onChanged(change) {
+  browser.commands.update({
+    name: "textern.tb-trigger-feature",
+    shortcut:change.shortcut.newValue
+  });
+}
+
+(async () => {
+    browser.windows.onFocusChanged.addListener(onFocusChanged);
+    browser.commands.onCommand.addListener(onCommand);
+    browser.composeAction.onClicked.addListener(onClicked);
+    browser.storage.onChanged.addListener(onChanged);
+    browser.composeScripts.register({ js: [ {file: "content.js"}, ] });
+    window.addEventListener('unload', () => {
+        browser.windows.onFocusChanged.removeListener(onFocusChanged);
+        browser.commands.onCommand.removeListener(onCommand);
+        browser.composeAction.onClicked.removeListener(onClicked);
+        browser.storage.onChanged.removeListener(onChanged);
+    });
+})();
 
