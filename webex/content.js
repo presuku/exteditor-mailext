@@ -15,14 +15,6 @@ function assertNoResponse(response) {
     console.assert(response == undefined);
 }
 
-function notifyError(error) {
-    browser.notifications.create({
-        type: "basic",
-        title: "Textern.tb",
-        message: "Error: " + error + "."
-    });
-}
-
 function rgb(r, g, b) {
     return 'rgb(' + ([r, g, b].join()) + ')';
 }
@@ -52,19 +44,91 @@ function setText(message) {
     var e = document.body;
 
     if (message.plain) {
-        e.textContent = message.text;
+        e.innerText = message.text;
     } else {
-        e.innerHTML = message.text;
+        // add deleted line feed after body tag in setupRegisterDoc() in backgraound.js.
+        e.innerHTML = "\n" + message.text;
     }
     fadeBackground(e);
 }
 
-function onMessage(message, sender, respond) {
+function getTopNode(s) {
+    const pos = s.anchorNode.compareDocumentPosition(s.focusNode);
+    if (pos & Node.DOCUMENT_POSITION_FOLLOWING) {
+        return [s.anchorNode, s.anchorOffset];
+    } else {
+        return [s.focusNode, s.focusOffset];
+    }
+}
+
+let saveNodeForRestore = {};
+async function setMark(msg) {
+    const tid = msg.tid
+    const selection = window.getSelection();
+    const [topNode, topOffset] = getTopNode(selection);
+
+    let targetNode;
+    let targetParentNode;
+    let caretOffset;
+    if (topNode.nodeType == 3) {
+        targetNode = topNode;
+        targetParentNode = topNode.parentElement;
+        caretOffset = topOffset;
+    } else {
+        [targetNode, targetParentNode] = ((n) => {
+            const l = n.childNodes.length;
+            if (l == 0) {
+                return [n, n.parentElement];
+            } else {
+                return [n.childNodes[topOffset], n];
+            }
+        })(topNode);
+
+        caretOffset = 0;
+    }
+
+    const markText = "#+#+*#*#" + Date.now().toString() + "#*#*+#+#";
+    const splitMarkNode = document.createElement("span");
+    splitMarkNode.id = markText;
+    const markHTML = splitMarkNode.outerHTML;
+
+    targetParentNode.insertBefore(splitMarkNode, targetNode);
+
+    saveNodeForRestore[tid] = [targetParentNode, splitMarkNode, selection];
+
+    await browser.runtime.sendMessage("textern.tb@example.com", {
+        type: "do_setup",
+        tid: tid,
+        mark_html: markHTML,
+        mark_text: markText,
+        caret_offset: caretOffset,
+    }).then(assertNoResponse, logError);
+}
+
+function restoreHTML(msg) {
+    const tid = msg.tid;
+    const [targetParentNode, splitMarkNode, selection] = saveNodeForRestore[tid];
+    const [topNode, topOffset] = getTopNode(selection);
+
+    targetParentNode.removeChild(splitMarkNode);
+
+    // restore caret position
+    const range = selection.getRangeAt(0);
+    range.setStart(topNode, topOffset);
+    range.setEnd(topNode, topOffset);
+
+    saveNodeForRestore[tid] = [];
+}
+
+async function onMessage(message, sender, respond) {
     if (sender.id != "textern.tb@example.com")
         return;
     if (message.type == "set_text") {
         setText(message);
-        console.log(`set_text message type: ${message.type}`);
+    } else if (message.type == "set_mark") {
+        setMark(message);
+    } else if (message.type == "restore_html") {
+        restoreHTML(message);
     } else {
         console.log(`Unknown message type: ${message.type}`);
     }
