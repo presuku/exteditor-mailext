@@ -73,7 +73,6 @@ async function setupRegisterDoc(msg) {
     const markHTML = msg.mark_html;
     const markText = msg.mark_text;
     let caret = msg.caret_offset;
-    console.log(`caret offset ${caret}`)
 
     // Get the existing message.
     const details = await browser.compose.getComposeDetails(tid);
