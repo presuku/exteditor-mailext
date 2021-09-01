@@ -272,10 +272,8 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
             text: text,
             caret: caret,
             subject: subject,
-            prefs: {
-                editor: values.editor,
-                extension: values.extension
-            }
+            editor: values.editor,
+            extension: values.extension
         }
     });
 }

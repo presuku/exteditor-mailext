@@ -141,10 +141,9 @@ def offset_to_line_and_column(text, offset):
 async def handle_message_new_text(tmp_mgr, msg):
 
     # create a new tempfile for it
-    absfn = tmp_mgr.new(msg["text"], msg["subject"],
-                        msg["prefs"]["extension"], msg["id"])
+    absfn = tmp_mgr.new(msg["text"], msg["subject"], msg["extension"], msg["id"])
 
-    editor_args = json.loads(msg["prefs"]["editor"])
+    editor_args = json.loads(msg["editor"])
     line, column = offset_to_line_and_column(msg["text"], msg["caret"])
 
     editor_args = get_final_editor_args(editor_args, absfn, line, column)
