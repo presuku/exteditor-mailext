@@ -40,10 +40,8 @@ function notifyError(error) {
 
 async function getSettings() {
 
-    var rs;
     var hs = headers;
-
-    await browser.storage.local.get([
+    var rs = await browser.storage.local.get([
             "editheaders",
             "editheaders_subject",
             "editheaders_to",
@@ -52,7 +50,7 @@ async function getSettings() {
             "editheaders_replyto",
             "editheaders_newsgroups",
             "editheaders_followupto",
-            ]).then(r => {rs = r}, logError);
+            ]).catch(logError);
 
     var editheaders = rs.editheaders;
     delete rs.editheaders
@@ -233,7 +231,7 @@ function unregisterDoc(id) {
     }
 }
 
-function registerDoc(tid, isPlain, text, caret, subject) {
+async function registerDoc(tid, isPlain, text, caret, subject) {
 
     var id = `${tid}_${isPlain}`;
     if (activeDocs.indexOf(id) != -1) {
@@ -259,27 +257,26 @@ function registerDoc(tid, isPlain, text, caret, subject) {
         });
     }
 
-    browser.storage.local.get({
-        editor: "[\"gedit\", \"+%l:%c\"]",
-        extension: "eml"
-    }).then(values => {
-        if (port == undefined || port.error) {
-            return;
-        }
-        port.postMessage({
-            type: "new_text",
-            payload: {
-                id: id,
-                text: text,
-                caret: caret,
-                subject: subject,
-                prefs: {
-                    editor: values.editor,
-                    extension: values.extension
-                }
+    var values = await browser.storage.local.get({
+                    editor: "[\"gedit\", \"+%l:%c\"]",
+                    extension: "eml"
+                }).catch(logError);
+    if (port.error) {
+        return;
+    }
+    port.postMessage({
+        type: "new_text",
+        payload: {
+            id: id,
+            text: text,
+            caret: caret,
+            subject: subject,
+            prefs: {
+                editor: values.editor,
+                extension: values.extension
             }
-        });
-    }, logError);
+        }
+    });
 }
 
 function onFocusChanged(windowId) {
