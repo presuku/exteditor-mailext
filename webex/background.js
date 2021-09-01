@@ -243,6 +243,10 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
     activeDocs.push(id);
     if (port == undefined) {
         port = browser.runtime.connectNative("textern.tb");
+        if (port.error) {
+            unregisterDoc(id);
+            return;
+        }
         port.onMessage.addListener((response) => {
             handleNativeMessage(response);
         });
@@ -261,9 +265,6 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
                     editor: "[\"gedit\", \"+%l:%c\"]",
                     extension: "eml"
                 }).catch(logError);
-    if (port.error) {
-        return;
-    }
     port.postMessage({
         type: "new_text",
         payload: {
