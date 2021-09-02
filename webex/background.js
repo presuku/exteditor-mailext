@@ -244,6 +244,8 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
         port = browser.runtime.connectNative("textern.tb");
         if (port.error) {
             unregisterDoc(id);
+            notifyError("connect to native application failed");
+            logError(p.error);
             return;
         }
         port.onMessage.addListener((response) => {
@@ -251,10 +253,6 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
         });
         port.onDisconnect.addListener((p) => {
             console.log("Disconnected from helper");
-            if (p.error) {
-                notifyError("connect to native application failed");
-                logError(p.error);
-            }
             activeDocs = [];
             port = undefined;
         });
