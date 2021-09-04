@@ -7,7 +7,7 @@
 "use strict";
 
 function logError(error) {
-    console.log(`Error: ${error}`);
+    console.log(`${error}`);
 }
 
 function saveOptions(e) {
