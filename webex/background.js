@@ -281,17 +281,16 @@ function onFocusChanged(windowId) {
 
 async function onCommand(command) {
     if (command === "textern.tb-trigger-feature") {
-        let tid;
-        await browser.tabs.query({
+        let tabs = await browser.tabs.query({
             windowId: currentWinId,
             lastFocusedWindow: false,
             windowType: "messageCompose",
             active: true
-        }).then(tabs => { tid = tabs[0].id; }, logError);
+        }).catch(logError);
 
-        await browser.tabs.sendMessage(tid, {
+        await browser.tabs.sendMessage(tabs[0].id, {
             type: "set_mark",
-            tid: tid,
+            tid: tabs[0].id,
         }).then(assertNoResponse, logError);
     }
 }
