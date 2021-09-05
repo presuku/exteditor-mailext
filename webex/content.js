@@ -30,7 +30,7 @@ function fadeBackground(e) {
     var i = 0;
     var timerId = window.setInterval(function() {
         if (i < ANIMATION_N_STEPS) {
-            e.style.backgroundColor = rgb(255, 255, i*(255/ANIMATION_N_STEPS));
+            e.style.backgroundColor = rgb(255, 255, i * (255 / ANIMATION_N_STEPS));
             i++;
         } else {
             e.style.backgroundColor = e.texternOrigBackgroundColor;
@@ -41,7 +41,7 @@ function fadeBackground(e) {
 }
 
 function setText(message) {
-    var e = document.body;
+    const e = document.body;
 
     if (message.plain) {
         e.innerText = message.text;
@@ -120,7 +120,7 @@ function restoreHTML(msg) {
     saveNodeForRestore[tid] = [];
 }
 
-async function onMessage(message, sender, respond) {
+async function onMessage(message, sender) {
     if (sender.id != "textern.tb@example.com")
         return;
     if (message.type == "set_text") {

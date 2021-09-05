@@ -17,16 +17,16 @@ function saveOptions(e) {
     var count = 0;
 
     document.querySelectorAll("form > fieldset > div > input").forEach(
-        function(value, key, listObj, argument) {
-          if (value.checked) {
-            count += 1;
-          }
+        function(value) {
+            if (value.checked) {
+                count += 1;
+            }
         }
     )
 
     if (count == 0) {
-      editheadersFieldsetToggle(editheaders);
-      editheaders.checked = false;
+        editheadersFieldsetToggle(editheaders);
+        editheaders.checked = false;
     }
 
     browser.storage.local.set({
@@ -45,7 +45,7 @@ function saveOptions(e) {
     document.querySelector("#saved").innerHTML = '\u2713';
 }
 
-function clearCheckmark(e) {
+function clearCheckmark() {
     document.querySelector("#saved").innerHTML = "";
 }
 
@@ -80,24 +80,24 @@ async function restoreOptions() {
 }
 
 function editheadersFieldsetToggle(e) {
-  document.querySelector("#editheaders-fieldset").disabled = !e.checked;
+    document.querySelector("#editheaders-fieldset").disabled = !e.checked;
 }
 
 document.addEventListener("DOMContentLoaded", restoreOptions);
 document.querySelector("form").addEventListener("submit", saveOptions);
 document.querySelectorAll("form > input").forEach(
-    function(value, key, listObj, argument) {
+    function(value) {
         value.addEventListener("input", clearCheckmark);
     }
 );
 
 document.querySelectorAll("form > fieldset").forEach(
-    function(value, key, listObj, argument) {
+    function(value) {
         value.addEventListener("change", clearCheckmark);
     }
 );
 
 document.querySelector("#editheaders").addEventListener("change", (e) => {
-  editheadersFieldsetToggle(e.target);
+    editheadersFieldsetToggle(e.target);
 });
 

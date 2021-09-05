@@ -13,13 +13,13 @@ var currentWinId = undefined;
 var newLine = "\n"
 var splitLine = "-=-=-=-=-=-=-=-=-=# DontRemoveThisLine #=-=-=-=-=-=-=-=-=-" + newLine;
 var headers = {
-    editheaders_subject    : {k:"subject",    v:"Subject",     s:false},
-    editheaders_to         : {k:"to",         v:"To",          s:false},
-    editheaders_cc         : {k:"cc",         v:"Cc",          s:false},
-    editheaders_bcc        : {k:"bcc",        v:"Bcc",         s:false},
-    editheaders_replyto    : {k:"replyTo",    v:"Reply-To",    s:false},
-    editheaders_newsgroups : {k:"newsgroups", v:"Newsgroup",   s:false},
-    editheaders_followupto : {k:"followupTo", v:"Followup-To", s:false},
+    editheaders_subject: { k: "subject", v: "Subject", s: false },
+    editheaders_to: { k: "to", v: "To", s: false },
+    editheaders_cc: { k: "cc", v: "Cc", s: false },
+    editheaders_bcc: { k: "bcc", v: "Bcc", s: false },
+    editheaders_replyto: { k: "replyTo", v: "Reply-To", s: false },
+    editheaders_newsgroups: { k: "newsgroups", v: "Newsgroup", s: false },
+    editheaders_followupto: { k: "followupTo", v: "Followup-To", s: false },
 };
 
 function logError(error) {
@@ -42,15 +42,15 @@ async function getSettings() {
 
     var hs = headers;
     var rs = await browser.storage.local.get([
-            "editheaders",
-            "editheaders_subject",
-            "editheaders_to",
-            "editheaders_cc",
-            "editheaders_bcc",
-            "editheaders_replyto",
-            "editheaders_newsgroups",
-            "editheaders_followupto",
-            ]).catch(logError);
+        "editheaders",
+        "editheaders_subject",
+        "editheaders_to",
+        "editheaders_cc",
+        "editheaders_bcc",
+        "editheaders_replyto",
+        "editheaders_newsgroups",
+        "editheaders_followupto",
+    ]).catch(logError);
 
     var editheaders = rs.editheaders;
     delete rs.editheaders
@@ -104,8 +104,8 @@ async function setupRegisterDoc(msg) {
     let p;
     if (details.isPlainText) {
         html.body.innerHTML = html.body.innerHTML
-                                       .replace(markHTML, markText)
-                                       .replace(/<br>/g, "<br>\n");
+            .replace(markHTML, markText)
+            .replace(/<br>/g, "<br>\n");
         body = html.body.innerText.split(markText)
         p = 1;
     } else {
@@ -153,10 +153,10 @@ async function contentSetActiveText(tid, isPlain, text) {
         var whichHeader = headerList[i].split(":");
         if (whichHeader.length >= 2) {
             headerType = ((h, s) => {
-                            for (let i in h) {
-                                if (h[i].v.toLowerCase() == s) { return h[i].k; }
-                            }
-                         })(hs, whichHeader.shift().replace(/\s+/g, "").toLowerCase());
+                for (let i in h) {
+                    if (h[i].v.toLowerCase() == s) { return h[i].k; }
+                }
+            })(hs, whichHeader.shift().replace(/\s+/g, "").toLowerCase());
             // if the subject contains ":", the array has more than 2 members...
             var headerContent = whichHeader.join(":").replace(/^\s+/, "");
             if (hTable[headerType] === undefined) {
@@ -185,7 +185,7 @@ async function contentSetActiveText(tid, isPlain, text) {
             p[hs[i].k] = hs[i].s ? hTable[hs[i].k] : undefined;
         }
         p.plainTextBody = undefined;
-        p.body          = undefined;
+        p.body = undefined;
         return p;
     })();
 
@@ -251,7 +251,7 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
         port.onMessage.addListener((response) => {
             handleNativeMessage(response);
         });
-        port.onDisconnect.addListener((p) => {
+        port.onDisconnect.addListener(() => {
             console.log("Disconnected from helper");
             activeDocs = [];
             port = undefined;
@@ -259,9 +259,9 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
     }
 
     var values = await browser.storage.local.get({
-                    editor: "[\"gedit\", \"+%l:%c\"]",
-                    extension: "eml"
-                }).catch(logError);
+        editor: "[\"gedit\", \"+%l:%c\"]",
+        extension: "eml"
+    }).catch(logError);
     port.postMessage({
         type: "new_text",
         payload: {
@@ -304,13 +304,13 @@ async function onClicked(tab) {
 }
 
 async function onChanged(change) {
-  browser.commands.update({
-    name: "_execute_compose_action",
-    shortcut:change.shortcut.newValue,
-  });
+    browser.commands.update({
+        name: "_execute_compose_action",
+        shortcut: change.shortcut.newValue,
+    });
 }
 
-function onMessage(message, sender, respond) {
+function onMessage(message, sender) {
     if (sender.id != "textern.tb@example.com")
         return;
     if (message.type == "do_setup") {
@@ -326,7 +326,7 @@ function onMessage(message, sender, respond) {
     browser.composeAction.onClicked.addListener(onClicked);
     browser.storage.onChanged.addListener(onChanged);
     browser.runtime.onMessage.addListener(onMessage);
-    browser.composeScripts.register({ js: [ {file: "content.js"}, ] });
+    browser.composeScripts.register({ js: [{ file: "content.js" },] });
     window.addEventListener('unload', () => {
         browser.windows.onFocusChanged.removeListener(onFocusChanged);
         browser.commands.onCommand.removeListener(onCommand);
