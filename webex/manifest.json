@@ -31,8 +31,11 @@
     ]
   },
   "commands": {
-    "textern.tb-trigger-feature": {
-      "suggested_key": { "default": "Ctrl+E" }
+    "_execute_compose_action": {
+      "description": "Launch external editor from compose window",
+      "suggested_key": {
+        "default": "Ctrl+E"
+      }
     }
   },
   "options_ui": {

@@ -280,14 +280,15 @@ function onFocusChanged(windowId) {
 }
 
 async function onCommand(command) {
-    if (command === "textern.tb-trigger-feature") {
+    if (command === "_execute_compose_action") {
         let tabs = await browser.tabs.query({
             windowId: currentWinId,
-            lastFocusedWindow: false,
             windowType: "messageCompose",
             active: true
         }).catch(logError);
-
+        if (!tabs?.length) {
+            return
+        }
         await browser.tabs.sendMessage(tabs[0].id, {
             type: "set_mark",
             tid: tabs[0].id,
@@ -304,8 +305,8 @@ async function onClicked(tab) {
 
 async function onChanged(change) {
   browser.commands.update({
-    name: "textern.tb-trigger-feature",
-    shortcut:change.shortcut.newValue
+    name: "_execute_compose_action",
+    shortcut:change.shortcut.newValue,
   });
 }
 
