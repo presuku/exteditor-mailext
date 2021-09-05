@@ -7,12 +7,12 @@
 
 "use strict";
 
-var port = undefined;
-var activeDocs = [];
-var currentWinId = undefined;
-var newLine = "\n"
-var splitLine = "-=-=-=-=-=-=-=-=-=# DontRemoveThisLine #=-=-=-=-=-=-=-=-=-" + newLine;
-var headers = {
+let port = undefined;
+let activeDocs = [];
+let currentWinId = undefined;
+const newLine = "\n"
+const splitLine = "-=-=-=-=-=-=-=-=-=# DontRemoveThisLine #=-=-=-=-=-=-=-=-=-" + newLine;
+const headers = {
     editheaders_subject: { k: "subject", v: "Subject", s: false },
     editheaders_to: { k: "to", v: "To", s: false },
     editheaders_cc: { k: "cc", v: "Cc", s: false },
@@ -40,8 +40,8 @@ function notifyError(error) {
 
 async function getSettings() {
 
-    var hs = headers;
-    var rs = await browser.storage.local.get([
+    let hs = headers;
+    let rs = await browser.storage.local.get([
         "editheaders",
         "editheaders_subject",
         "editheaders_to",
@@ -52,15 +52,15 @@ async function getSettings() {
         "editheaders_followupto",
     ]).catch(logError);
 
-    var editheaders = rs.editheaders;
+    const editheaders = rs.editheaders;
     delete rs.editheaders
 
     if (editheaders) {
-        for (let i in rs) {
+        for (const i in rs) {
             hs[i].s = rs[i];
         }
     } else {
-        for (let i in rs) {
+        for (const i in rs) {
             hs[i].s = false;
         }
     }
@@ -80,7 +80,7 @@ async function setupRegisterDoc(msg) {
     let content = "";
 
     if (editHeaders) {
-        for (let i in hs) {
+        for (const i in hs) {
             if (hs[i].s) {
                 content += hs[i].v + ":"
                     + " ".repeat(11 - hs[i].v.length)
@@ -133,9 +133,9 @@ async function setupRegisterDoc(msg) {
 }
 
 async function contentSetActiveText(tid, isPlain, text) {
-    var contentList = text.split(splitLine);
-    var body;
-    var [editHeaders, hs] = await getSettings();
+    const contentList = text.split(splitLine);
+    const [editHeaders, hs] = await getSettings();
+    let body;
 
     if (editHeaders && contentList.length == 1) {
         notifyError("malformed error");
@@ -145,20 +145,20 @@ async function contentSetActiveText(tid, isPlain, text) {
     } else {
         body = contentList[1];
     }
-    var headerList = contentList[0].split(newLine)
-    var hTable = new Array;
-    var headerType = "unknown"; // should never be used
+    const headerList = contentList[0].split(newLine)
+    let hTable = new Array;
+    let headerType = "unknown"; // should never be used
 
-    for (var i = 0; i < headerList.length; ++i) {
-        var whichHeader = headerList[i].split(":");
+    for (let i = 0; i < headerList.length; ++i) {
+        let whichHeader = headerList[i].split(":");
         if (whichHeader.length >= 2) {
             headerType = ((h, s) => {
-                for (let i in h) {
+                for (const i in h) {
                     if (h[i].v.toLowerCase() == s) { return h[i].k; }
                 }
             })(hs, whichHeader.shift().replace(/\s+/g, "").toLowerCase());
             // if the subject contains ":", the array has more than 2 members...
-            var headerContent = whichHeader.join(":").replace(/^\s+/, "");
+            const headerContent = whichHeader.join(":").replace(/^\s+/, "");
             if (hTable[headerType] === undefined) {
                 hTable[headerType] = headerContent;
             } else {
@@ -172,16 +172,16 @@ async function contentSetActiveText(tid, isPlain, text) {
         }
     }
 
-    for (let i in hs) {
+    for (const i in hs) {
         if (hTable[hs[i].k] === undefined) {
             hTable[hs[i].k] = ""
         }
     }
 
 
-    var payload = (() => {
-        var p = {};
-        for (let i in hs) {
+    const payload = (() => {
+        let p = {};
+        for (const i in hs) {
             p[hs[i].k] = hs[i].s ? hTable[hs[i].k] : undefined;
         }
         p.plainTextBody = undefined;
@@ -200,7 +200,7 @@ async function contentSetActiveText(tid, isPlain, text) {
 
 function handleNativeMessage(msg) {
     if (msg.type == "text_update") {
-        var [tid, isPlain] = msg.payload.id.split("_").map(x => { return parseInt(x); });
+        const [tid, isPlain] = msg.payload.id.split("_").map(x => { return parseInt(x); });
         if (tid == NaN || isPlain == NaN) {
             console.log(`Invalid id: ${msg.payload.id}`);
             return;
@@ -217,7 +217,7 @@ function handleNativeMessage(msg) {
 
 function unregisterDoc(id) {
 
-    var i = activeDocs.indexOf(id);
+    const i = activeDocs.indexOf(id);
     if (i == -1) {
         console.log(`Error: document id ${id} isn't being edited`);
         return;
@@ -232,7 +232,7 @@ function unregisterDoc(id) {
 
 async function registerDoc(tid, isPlain, text, caret, subject) {
 
-    var id = `${tid}_${isPlain}`;
+    const id = `${tid}_${isPlain}`;
     if (activeDocs.indexOf(id) != -1) {
         console.log(`Error: document id ${id} is already being edited`);
         notifyError("this text is already being edited");
@@ -258,7 +258,7 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
         });
     }
 
-    var values = await browser.storage.local.get({
+    const values = await browser.storage.local.get({
         editor: "[\"gedit\", \"+%l:%c\"]",
         extension: "eml"
     }).catch(logError);
@@ -281,7 +281,7 @@ function onFocusChanged(windowId) {
 
 async function onCommand(command) {
     if (command === "_execute_compose_action") {
-        let tabs = await browser.tabs.query({
+        const tabs = await browser.tabs.query({
             windowId: currentWinId,
             windowType: "messageCompose",
             active: true

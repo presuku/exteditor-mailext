@@ -27,8 +27,8 @@ function fadeBackground(e) {
         return; /* if there's already an animation in progress, don't start a new one */
     e.texternOrigBackgroundColor = e.style.backgroundColor;
     e.style.backgroundColor = rgb(255, 255, 0);
-    var i = 0;
-    var timerId = window.setInterval(function() {
+    let i = 0;
+    const timerId = window.setInterval(function() {
         if (i < ANIMATION_N_STEPS) {
             e.style.backgroundColor = rgb(255, 255, i * (255 / ANIMATION_N_STEPS));
             i++;

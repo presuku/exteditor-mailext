@@ -13,8 +13,8 @@ function logError(error) {
 function saveOptions(e) {
     e.preventDefault();
 
-    var editheaders = document.querySelector("#editheaders")
-    var count = 0;
+    const editheaders = document.querySelector("#editheaders")
+    let count = 0;
 
     document.querySelectorAll("form > fieldset > div > input").forEach(
         function(value) {
