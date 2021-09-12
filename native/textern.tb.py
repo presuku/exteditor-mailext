@@ -12,7 +12,6 @@ import shutil
 import struct
 import sys
 import tempfile
-import urllib.parse
 
 try:
     from inotify_simple import INotify, flags
@@ -45,7 +44,8 @@ class TmpManager():
         return relfn in self._tmpfiles
 
     def new(self, text, subject, extension, opaque):
-        sanitized_subject = "".join(x if x.isalnum() else '_' for x in subject[:32])
+        sanitized_subject = "".join(
+            x if x.isalnum() else '_' for x in subject[:32])
         f, absfn = tempfile.mkstemp(dir=self.tmpdir,
                                     prefix=(sanitized_subject + '-'),
                                     suffix=("." + extension))
@@ -141,7 +141,8 @@ def offset_to_line_and_column(text, offset):
 async def handle_message_new_text(tmp_mgr, msg):
 
     # create a new tempfile for it
-    absfn = tmp_mgr.new(msg["text"], msg["subject"], msg["extension"], msg["id"])
+    absfn = tmp_mgr.new(msg["text"], msg["subject"],
+                        msg["extension"], msg["id"])
 
     editor_args = json.loads(msg["editor"])
     line, column = offset_to_line_and_column(msg["text"], msg["caret"])
@@ -170,7 +171,9 @@ message_handlers = {
 }
 
 
-g_first_edit =  True
+g_first_edit = True
+
+
 def handle_inotify_event(ino, tmp_mgr):
     global g_first_edit
     for event in ino.read():
