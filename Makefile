@@ -20,23 +20,23 @@ all:
 	@echo "Set USER=1 to target user directories instead."
 
 # make phony and don't depend on .in file in case $USER changes
-.PHONY: native/textern.tb.json
-native/textern.tb.json:
-	sed -e 's|@@NATIVE_PATH@@|$(LIBEXEC)/textern.tb/textern.tb.py|' $@.in > $@
+.PHONY: native/exteditor.json.in
+native/exteditor.json:
+	sed -e 's|@@NATIVE_PATH@@|$(LIBEXEC)/exteditor/exteditor.py|' $@.in > $@
 
 .PHONY: native-install
-native-install: native/textern.tb.json
+native-install: native/exteditor.json
 	@if ! test -f native/inotify_simple/.git; then echo "Missing inotify_simple submodule! Try 'git submodule update --init'."; false; fi
 	mkdir -p $(DESTDIR)$(MOZILLA_NATIVE)
-	cp -f native/textern.tb.json $(DESTDIR)$(MOZILLA_NATIVE)
-	mkdir -p $(DESTDIR)$(LIBEXEC)/textern.tb
-	cp -rf native/textern.tb.py native/inotify_simple $(DESTDIR)$(LIBEXEC)/textern.tb
+	cp -f native/exteditor.json $(DESTDIR)$(MOZILLA_NATIVE)
+	mkdir -p $(DESTDIR)$(LIBEXEC)/exteditor
+	cp -rf native/exteditor.py native/inotify_simple $(DESTDIR)$(LIBEXEC)/exteditor
 
 .PHONY: native-uninstall
 native-uninstall:
-	rm -f $(DESTDIR)$(MOZILLA_NATIVE)/textern.tb.json
-	rm -rf $(DESTDIR)$(LIBEXEC)/textern.tb
+	rm -f $(DESTDIR)$(MOZILLA_NATIVE)/exteditor.json
+	rm -rf $(DESTDIR)$(LIBEXEC)/exteditor
 
 .PHONY: xpi
 xpi:
-	@rm -f textern.tb.xpi && cd webex && zip -r -FS ../textern.tb.xpi *
+	@rm -f exteditor.xpi && cd webex && zip -r -FS ../exteditor.xpi *

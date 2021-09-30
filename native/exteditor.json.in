@@ -1,7 +1,7 @@
 {
-    "name": "textern.tb",
+    "name": "exteditor",
     "description": "Edit text with an external editor.",
     "path": "@@NATIVE_PATH@@",
     "type": "stdio",
-    "allowed_extensions": [ "textern.tb@example.com" ]
+    "allowed_extensions": [ "exteditor.mailext@example.com" ]
 }

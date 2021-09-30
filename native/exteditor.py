@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # vim: set et ts=4 tw=80:
-# This file is part of Textern.
 # Copyright (C) 2017-2018  Jonathan Lebon <jonathan@jlebon.com>
 # Copyright (C) 2018  Oleg Broytman <phd@phdru.name>
+# Copyright (C) 2021  presuku <presuku.stdio+eem@gmail.com>
+# This file is part of External Editor for MailExtension.
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import asyncio
@@ -25,13 +26,13 @@ class TmpManager():
     def __init__(self):
         try:
             tmpdir_parent = os.path.join(
-                os.environ['XDG_RUNTIME_DIR'], 'textern')
+                os.environ['XDG_RUNTIME_DIR'], 'exteditor')
             os.makedirs(tmpdir_parent)
         except FileExistsError:
             pass
         except (KeyError, OSError):
             tmpdir_parent = None
-        self.tmpdir = tempfile.mkdtemp(prefix="textern.tb-", dir=tmpdir_parent)
+        self.tmpdir = tempfile.mkdtemp(prefix="mail-", dir=tmpdir_parent)
         self._tmpfiles = {}  # relfn --> opaque
 
     def __enter__(self):

@@ -96,7 +96,7 @@ async function setMark(msg) {
 
     saveNodeForRestore[tid] = [targetParentNode, splitMarkNode, selection];
 
-    await browser.runtime.sendMessage("textern.tb@example.com", {
+    await browser.runtime.sendMessage("exteditor.mailext@example.com", {
         type: "do_setup",
         tid: tid,
         mark_html: markHTML,
@@ -121,7 +121,7 @@ function restoreHTML(msg) {
 }
 
 async function onMessage(message, sender) {
-    if (sender.id != "textern.tb@example.com")
+    if (sender.id != "exteditor.mailext@example.com")
         return;
     if (message.type == "set_text") {
         setText(message);

@@ -1,7 +1,7 @@
 /* vim: set et ts=4 sts=4 sw=4 tw=92:
- * Copyright (C) 2021       presuku <presuku@gmail.com>
  * Copyright (C) 2017-2018  Jonathan Lebon <jonathan@jlebon.com>
- * This file is part of Textern for thunderbird.
+ * Copyright (C) 2021  presuku <presuku.stdio+eem@gmail.com>
+ * This file is part of External Editor for MailExtension.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -33,7 +33,7 @@ function assertNoResponse(response) {
 function notifyError(error) {
     browser.notifications.create({
         type: "basic",
-        title: "Textern.tb",
+        title: "External Editor",
         message: "Error: " + error + "."
     });
 }
@@ -241,7 +241,7 @@ async function registerDoc(tid, isPlain, text, caret, subject) {
 
     activeDocs.push(id);
     if (port == undefined) {
-        port = browser.runtime.connectNative("textern.tb");
+        port = browser.runtime.connectNative("exteditor");
         if (port.error) {
             unregisterDoc(id);
             notifyError("connect to native application failed");
@@ -311,7 +311,7 @@ async function onChanged(change) {
 }
 
 function onMessage(message, sender) {
-    if (sender.id != "textern.tb@example.com")
+    if (sender.id != "exteditor.mailext@example.com")
         return;
     if (message.type == "do_setup") {
         setupRegisterDoc(message);
