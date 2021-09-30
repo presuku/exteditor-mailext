@@ -1,13 +1,13 @@
 {
-  "name": "Textern.tb",
+  "name": "External Editor for MailExtension",
   "description": "Edit text in your favourite external editor!",
-  "homepage_url": "https://github.com/presuku/textern",
+  "homepage_url": "https://github.com/presuku/exteditor-mailext",
   "manifest_version": 2,
   "version": "0.1",
   "author": "presuku",
   "applications": {
     "gecko": {
-      "id": "textern.tb@example.com",
+      "id": "exteditor.mailext@example.com",
       "strict_min_version": "78.0"
     }
   },
@@ -16,7 +16,7 @@
     "scripts": ["background.js"]
   },
   "compose_action": {
-    "default_title": "textern.tb",
+    "default_title": "External Editor",
     "theme_icons": [
       {
         "light": "images/pen.svg",
