@@ -326,7 +326,7 @@ function onMessage(message, sender) {
     browser.composeAction.onClicked.addListener(onClicked);
     browser.storage.onChanged.addListener(onChanged);
     browser.runtime.onMessage.addListener(onMessage);
-    browser.composeScripts.register({ js: [{ file: "content.js" },] });
+    browser.composeScripts.register({ js: [{ file: "compose.js" },] });
     window.addEventListener('unload', () => {
         browser.windows.onFocusChanged.removeListener(onFocusChanged);
         browser.commands.onCommand.removeListener(onCommand);
