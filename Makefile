@@ -19,18 +19,24 @@ all:
 	@echo
 	@echo "Set USER=1 to target user directories instead."
 
+.PHONY: clean
+clean:
+	rm exteditor.xpi
+
 # make phony and don't depend on .in file in case $USER changes
-.PHONY: native/exteditor.json.in
-native/exteditor.json:
-	sed -e 's|@@NATIVE_PATH@@|$(LIBEXEC)/exteditor/exteditor.py|' $@.in > $@
+native/exteditor.json: native/exteditor.json.in
+	sed -e 's|@@NATIVE_PATH@@|$(LIBEXEC)/exteditor/exteditor|' $@.in > $@
+
+.PHONY: native-build
+native-build:
+	$(MAKE) -C native
 
 .PHONY: native-install
-native-install: native/exteditor.json
-	@if ! test -f native/inotify_simple/.git; then echo "Missing inotify_simple submodule! Try 'git submodule update --init'."; false; fi
+native-install: native/exteditor.json native-build
 	mkdir -p $(DESTDIR)$(MOZILLA_NATIVE)
 	cp -f native/exteditor.json $(DESTDIR)$(MOZILLA_NATIVE)
 	mkdir -p $(DESTDIR)$(LIBEXEC)/exteditor
-	cp -rf native/exteditor.py native/inotify_simple $(DESTDIR)$(LIBEXEC)/exteditor
+	cp -f native/exteditor $(DESTDIR)$(LIBEXEC)/exteditor
 
 .PHONY: native-uninstall
 native-uninstall:
