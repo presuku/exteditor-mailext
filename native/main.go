@@ -54,7 +54,7 @@ type tmpManager struct {
 	tmp_dir   string
 	tmp_files map[string]string
 	errch     chan error
-  exec_done chan struct{}
+	exec_done chan struct{}
 	mu        *sync.RWMutex
 }
 
@@ -141,7 +141,7 @@ func send_raw_message(raw_msg []byte) {
 	os.Stdout.Sync()
 
 	// mylog.Printf("raw:%s\n", raw_msg)
-  mylog.Printf("send raw:%d\n", l)
+	mylog.Printf("send raw:%d\n", l)
 
 	return
 }
@@ -221,7 +221,7 @@ func handle_inotify_event(ctx context.Context, tmp_mgr *tmpManager) error {
 			}
 			return err
 		case <-tmp_mgr.exec_done:
-      break
+			break
 		case <-ctx.Done():
 			return nil
 		}
@@ -418,7 +418,7 @@ func NewTmpManager() (*tmpManager, error) {
 	ret := &tmpManager{tmp_dir: dir, tmp_files: map[string]string{}}
 	ret.mu = &sync.RWMutex{}
 	ret.errch = make(chan error, 3)
-  ret.exec_done = make(chan struct{})
+	ret.exec_done = make(chan struct{})
 	return ret, nil
 }
 
